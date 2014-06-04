@@ -6,13 +6,6 @@ class kibana3::install {
     require 'git'
   }
 
-  if $::kibana3::manage_ws {
-    class {
-      'apache':
-      default_vhost => false,
-    }
-  }
-
   if $::kibana3::k3_folder_owner {
     $_ws_user = $::kibana3::k3_folder_owner
   } elsif $::kibana3::manage_ws {
