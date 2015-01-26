@@ -40,6 +40,6 @@ class kibana3::params {
 
   $manage_ws        = true
   $ws_servername    = 'kibana3'
-  $ws_port          = '80'
+  $ws_port          = '8300'
   $ws_default_vhost = false
 }

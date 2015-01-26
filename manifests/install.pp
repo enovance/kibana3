@@ -14,35 +14,27 @@ class kibana3::install {
     $_ws_user = 'root'
   }
 
-  if $::kibana3::manage_ws {
+  Vcsrepo[$::kibana3::k3_install_folder] -> Apache::Vhost[$::kibana3::ws_servername]
 
-    if $::kibana3::manage_git_repository {
-      Vcsrepo[$::kibana3::k3_install_folder] -> Apache::Vhost[$::kibana3::ws_servername]
-    }
+  include ::apache
 
-    include ::apache
-
-    $base_options = {
-      'port'          => $::kibana3::ws_port,
-      'default_vhost' => $::kibana3::ws_default_vhost,
-      'docroot'       => "${::kibana3::k3_install_folder}/src",
-      'docroot_owner' => $_ws_user,
-    }
-
-    $merged_options = merge($base_options, $::kibana3::ws_extras)
-    $vhost_configuration = hash([$::kibana3::ws_servername, $merged_options])
-    create_resources('apache::vhost', $vhost_configuration, { 'notify' => 'Service[httpd]' })
-
+  $base_options = {
+    'port'          => $::kibana3::ws_port,
+    'default_vhost' => $::kibana3::ws_default_vhost,
+    'docroot'       => "${::kibana3::k3_install_folder}/src",
+    'docroot_owner' => $_ws_user,
   }
 
-  if $::kibana3::manage_git_repository {
-    vcsrepo {
-      $::kibana3::k3_install_folder:
-      ensure   => present,
-      provider => git,
-      source   => $::kibana3::k3_clone_url,
-      revision => $::kibana3::k3_release,
-      owner    => $_ws_user,
-    }
+  $merged_options = merge($base_options, $::kibana3::ws_extras)
+  $vhost_configuration = hash([$::kibana3::ws_servername, $merged_options])
+  create_resources('apache::vhost', $vhost_configuration, { 'notify' => 'Service[httpd]' })
+
+  vcsrepo {
+    $::kibana3::k3_install_folder:
+    ensure   => present,
+    provider => git,
+    source   => $::kibana3::k3_clone_url,
+    revision => $::kibana3::k3_release,
+    owner    => $_ws_user,
   }
 }
