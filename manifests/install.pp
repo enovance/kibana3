@@ -21,14 +21,18 @@ class kibana3::install {
     }
 
     include ::apache
-    apache::vhost {
-      $::kibana3::ws_servername :
-      port          => $::kibana3::ws_port,
-      default_vhost => $::kibana3::ws_default_vhost,
-      docroot       => "${::kibana3::k3_install_folder}/src",
-      docroot_owner => $_ws_user,
-      notify        => Service['httpd'],
+
+    $base_options = {
+      'port'          => $::kibana3::ws_port,
+      'default_vhost' => $::kibana3::ws_default_vhost,
+      'docroot'       => "${::kibana3::k3_install_folder}/src",
+      'docroot_owner' => $_ws_user,
     }
+
+    $merged_options = merge($base_options, $::kibana3::ws_extras)
+    $vhost_configuration = hash([$::kibana3::ws_servername, $merged_options])
+    create_resources('apache::vhost', $vhost_configuration, { 'notify' => 'Service[httpd]' })
+
   }
 
   if $::kibana3::manage_git_repository {
